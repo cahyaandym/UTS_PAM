@@ -1,24 +1,18 @@
-import {
-  StyleSheet,
-  Text,
-  View,
-  StatusBar,
-  Platform,
-  SafeAreaView,
-  FlatList,
-} from "react-native";
-import { useEffect, useState } from "react";
-import KartuNama from "./assets/KartuNama";
-import * as Contacts from "expo-contacts";
+import { View, StatusBar, Platform, SafeAreaView, Button } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import * as Contacts from 'expo-contacts';
+import ContactList from './Components/ContactList';
+import Profile from './Components/Profile';
 
-export default function App() {
+const App = () => {
   const [contacts, setContacts] = useState([]);
+  const [isContact, setIsContact] = useState(true);
 
   const getContacts = async () => {
     const { status } = await Contacts.requestPermissionsAsync();
 
     switch (status) {
-      case "granted":
+      case 'granted':
         const { data: contacts } = await Contacts.getContactsAsync({
           fields: [Contacts.Fields.Emails, Contacts.Fields.PhoneNumbers],
         });
@@ -33,14 +27,6 @@ export default function App() {
     }
   };
 
-  const renderItem = ({ item: contact }) => (
-    <KartuNama
-      nama={contact?.name ?? ""}
-      nomor={contact?.phoneNumbers?.[0]?.number ?? ""}
-      key={contact?.id}
-    />
-  );
-
   useEffect(() => {
     getContacts();
   }, []);
@@ -53,53 +39,42 @@ export default function App() {
     >
       <View
         style={{
-          paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+          paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
           flex: 1,
-          alignItems: "center",
-          padding: 10,
-          backgroundColor: "#215486",
+          alignItems: 'center',
+          backgroundColor: '#215486',
         }}
       >
-        {/* title */}
+        {isContact ? <ContactList contacts={contacts} /> : <Profile />}
         <View
           style={{
-            marginVertical: 15,
+            width: '100%',
+            height: 50,
+            justifyContent: 'center',
+            alignItems: 'center',
+            flexDirection: 'row',
+            position: 'absolute',
+            bottom: 5,
           }}
         >
-          <Text
-            style={{
-              fontSize: 28,
-              fontWeight: "bold",
-              color: "#fff",
-            }}
-          >
-            CONTACT
-          </Text>
-        </View>
-        {/* body */}
-        <View
-          style={{
-            padding: 10,
-            width: "100%",
-            height: "100%",
-          }}
-        >
-          <FlatList
-            data={contacts}
-            renderItem={renderItem}
-            keyExtractor={(contact) => contact.id}
-          />
+          <View style={{ marginRight: 10 }}>
+            <Button
+              title="Contact"
+              onPress={() => setIsContact(true)}
+              disabled={isContact}
+            />
+          </View>
+          <View style={{ marginLeft: 10 }}>
+            <Button
+              title="Profile"
+              onPress={() => setIsContact(false)}
+              disabled={!isContact}
+            />
+          </View>
         </View>
       </View>
     </SafeAreaView>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});
+export default App;
